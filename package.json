@@ -1,0 +1,125 @@
+{
+  "name": "vscode-retro-pokemon",
+  "displayName": "Retro Pokemon",
+  "description": "Original Game Boy Gen 1 Pokemon companions living in your VS Code.",
+  "version": "0.1.0",
+  "publisher": "korma",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "keywords": ["pokemon", "gameboy", "retro", "pet", "fun"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seven-monarchs/vscode-retro-pokemon.git"
+  },
+  "icon": "media/icon.png",
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "type": "webview",
+          "id": "retro-pokemon.sidebarView",
+          "name": "Retro Pokémon"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "retro-pokemon.spawnRandom",
+          "when": "view == retro-pokemon.sidebarView",
+          "group": "navigation"
+        },
+        {
+          "command": "retro-pokemon.spawn",
+          "when": "view == retro-pokemon.sidebarView",
+          "group": "navigation"
+        },
+        {
+          "command": "retro-pokemon.remove",
+          "when": "view == retro-pokemon.sidebarView",
+          "group": "navigation"
+        },
+        {
+          "command": "retro-pokemon.removeAll",
+          "when": "view == retro-pokemon.sidebarView",
+          "group": "navigation"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "retro-pokemon.spawn",
+        "title": "Retro Pokemon: Spawn Pokemon",
+        "icon": "$(add)"
+      },
+      {
+        "command": "retro-pokemon.spawnRandom",
+        "title": "Retro Pokemon: Spawn Random",
+        "icon": "$(random)"
+      },
+      {
+        "command": "retro-pokemon.remove",
+        "title": "Retro Pokemon: Remove Pokemon",
+        "icon": "$(close)"
+      },
+      {
+        "command": "retro-pokemon.removeAll",
+        "title": "Retro Pokemon: Remove All",
+        "icon": "$(trash)"
+      }
+    ],
+    "configuration": {
+      "title": "Retro Pokemon",
+      "properties": {
+        "retro-pokemon.team": {
+          "type": "array",
+          "default": [],
+          "description": "Your current Pokemon team (list of Pokemon IDs 1-151)."
+        },
+        "retro-pokemon.size": {
+          "type": "number",
+          "default": 3,
+          "minimum": 1,
+          "maximum": 6,
+          "description": "Number of Pokemon to show at once."
+        },
+        "retro-pokemon.gbPalette": {
+          "type": "boolean",
+          "default": true,
+          "description": "Apply original Game Boy green palette filter."
+        },
+        "retro-pokemon.scanlines": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show CRT scanline overlay."
+        },
+        "retro-pokemon.spriteScale": {
+          "type": "number",
+          "default": 1,
+          "minimum": 1,
+          "maximum": 8,
+          "description": "Sprite scale multiplier (original sprites are ~56px)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "download-sprites": "node scripts/download-sprites.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "ts-loader": "^9.5.0",
+    "typescript": "^5.3.0",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.0"
+  }
+}

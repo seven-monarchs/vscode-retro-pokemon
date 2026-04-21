@@ -1,0 +1,259 @@
+:root {
+  --gb-darkest:  #0f380f;
+  --gb-dark:     #306230;
+  --gb-light:    #8bac0f;
+  --gb-lightest: #9bbc0f;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* html and body are transparent — only #stage paints the GB background */
+html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; }
+
+/* VHS flicker applied to the stage so it stays scoped to the green strip */
+@keyframes vhs-flicker {
+  0%, 91%, 100% { opacity: 1; }
+  92%           { opacity: 0.93; }
+  94%           { opacity: 0.98; }
+  96%           { opacity: 0.91; }
+}
+
+/* VHS tracking line sweeping within the stage */
+@keyframes vhs-track {
+  0%   { top: -6px;   opacity: 0; }
+  3%   { opacity: 0.22; }
+  88%  { opacity: 0.14; }
+  96%  { opacity: 0; }
+  100% { top: 110%;   opacity: 0; }
+}
+
+/* Occasional glitch bar within the stage */
+@keyframes vhs-glitch {
+  0%    { opacity: 0;    top: 20%;  transform: scaleY(1)   translateX(0);    height: 5px; }
+  89%   { opacity: 0;    top: 20%; }
+  90%   { opacity: 0.20; top: 20%;  transform: scaleY(2.5) translateX(-4px); height: 7px; }
+  91%   { opacity: 0;    top: 55%;  transform: scaleY(1)   translateX(0);    height: 4px; }
+  91.5% { opacity: 0.15; top: 55%;  transform: scaleY(1.8) translateX(3px);  height: 9px; }
+  92%   { opacity: 0;    top: 75%;  transform: scaleY(1)   translateX(0);    height: 5px; }
+  92.5% { opacity: 0.18; top: 75%;  transform: scaleY(2)   translateX(-2px); height: 6px; }
+  93%   { opacity: 0;    top: 38%;  transform: scaleY(1)   translateX(0);    height: 5px; }
+  93.5% { opacity: 0.10; top: 38%;  transform: scaleY(3)   translateX(4px);  height: 4px; }
+  94%   { opacity: 0;    top: 20%;  transform: scaleY(1)   translateX(0);    height: 5px; }
+  100%  { opacity: 0;    top: 20%; }
+}
+
+/* Stage: fills the full section height — VS Code controls allocation, we fill it */
+#stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--gb-darkest);
+  overflow: hidden;
+  animation: vhs-flicker 7s step-end infinite;
+  box-shadow: inset 0 -2px 0 rgba(139, 172, 15, 0.5);
+}
+
+/* VHS track line inside stage */
+#stage::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(to bottom, transparent, rgba(155, 188, 15, 0.35) 50%, transparent);
+  animation: vhs-track 9s linear infinite;
+  pointer-events: none;
+  z-index: 300;
+}
+
+/* Scanline overlay */
+body.scanlines #stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom, transparent 0px, transparent 3px,
+    rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px
+  );
+  z-index: 100;
+}
+
+/* Ground line via inset shadow — ::before is used by vhs-track */
+
+/* --- DOM layers --- */
+
+.pokemon-wrapper {
+  position: absolute;
+  bottom: 2px;
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.pokemon-group {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: center bottom;
+}
+
+.pokemon-direction {
+  display: inline-block;
+  transform-origin: center bottom;
+}
+.pokemon-direction.facing-left { transform: scaleX(-1); }
+
+.pokemon-sprite {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  transform-origin: center bottom;
+}
+
+/* GB palette + chromatic-aberration ghost: light green halo right, dark ghost left */
+.pokemon-sprite.gb-palette {
+  filter:
+    grayscale(1) contrast(1.5) sepia(0.7) hue-rotate(55deg) brightness(0.82) saturate(1.4)
+    drop-shadow(4px 0 0 rgba(139, 172, 15, 0.45))
+    drop-shadow(-3px 0 0 rgba(15, 56, 15, 0.55));
+}
+
+/* --- Movement keyframes --- */
+
+@keyframes group-walk {
+  0%, 100% { transform: translateY(0px); }
+  25%, 75% { transform: translateY(-5px); }
+  50%      { transform: translateY(0px); }
+}
+@keyframes group-idle {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-3px); }
+}
+@keyframes group-bounce {
+  0%       { transform: translateY(0px); }
+  15%      { transform: translateY(-4px); }
+  40%, 60% { transform: translateY(-20px); }
+  85%      { transform: translateY(2px); }
+  100%     { transform: translateY(0px); }
+}
+
+@keyframes img-walk {
+  0%, 50%, 100% { transform: scaleY(0.97) scaleX(1.02); }
+  25%, 75%      { transform: scaleY(1.05) scaleX(0.96); }
+}
+@keyframes img-idle {
+  0%, 100% { transform: scaleY(1.00) scaleX(1.00); }
+  50%      { transform: scaleY(1.02) scaleX(0.99); }
+}
+@keyframes img-bounce {
+  0%, 100% { transform: scaleY(0.88) scaleX(1.12); }
+  40%, 60% { transform: scaleY(1.08) scaleX(0.93); }
+  85%      { transform: scaleY(0.82) scaleX(1.18); }
+}
+
+.pokemon-group.anim-group-walk   { animation: group-walk   0.45s ease-in-out infinite; }
+.pokemon-group.anim-group-idle   { animation: group-idle   2.2s  ease-in-out infinite; }
+.pokemon-group.anim-group-bounce { animation: group-bounce 0.5s  ease-in-out infinite; }
+
+.pokemon-sprite.anim-img-walk    { animation: img-walk   0.45s ease-in-out infinite; }
+.pokemon-sprite.anim-img-idle    { animation: img-idle   2.2s  ease-in-out infinite; }
+.pokemon-sprite.anim-img-bounce  { animation: img-bounce 0.5s  ease-in-out infinite; }
+
+/* Cry speaker icon — appears above the name box while audio plays */
+.cry-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 22px;
+  margin-bottom: 4px;
+  color: var(--gb-light);
+  background: var(--gb-darkest);
+  border: 2px solid var(--gb-light);
+  box-shadow: inset 0 0 0 1px var(--gb-darkest), 2px 2px 0 var(--gb-darkest);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s;
+}
+.cry-icon svg {
+  width: 14px;
+  height: 12px;
+  display: block;
+}
+@keyframes cry-pulse {
+  0%, 100% { color: var(--gb-light);    box-shadow: inset 0 0 0 1px var(--gb-darkest), 2px 2px 0 var(--gb-darkest); }
+  50%       { color: var(--gb-lightest); box-shadow: inset 0 0 0 1px var(--gb-darkest), 2px 2px 0 var(--gb-darkest), 0 0 6px var(--gb-light); }
+}
+.cry-icon.active {
+  opacity: 1;
+  animation: cry-pulse 0.5s ease-in-out infinite;
+}
+
+/* ---- Pokeball ---- */
+.pokeball-sprite {
+  border-radius: 50%;
+  border: 2px solid var(--gb-darkest);
+  background: linear-gradient(
+    to bottom,
+    var(--gb-dark)     0%,  var(--gb-dark)     42%,
+    var(--gb-darkest)  42%, var(--gb-darkest)   58%,
+    var(--gb-lightest) 58%, var(--gb-lightest) 100%
+  );
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  position: relative;
+  flex-shrink: 0;
+}
+.pokeball-sprite::after {
+  content: '';
+  position: absolute;
+  width: 32%;
+  height: 32%;
+  background: var(--gb-lightest);
+  border: 2px solid var(--gb-darkest);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes pokeball-flash {
+  0%, 49% { filter: brightness(1); }
+  50%, 99% { filter: brightness(6) saturate(0); }
+}
+.pokeball-flash { animation: pokeball-flash 0.11s step-start 3; }
+
+@keyframes pokemon-appear {
+  0%   { transform: scale(0.05); filter: brightness(10) saturate(0); }
+  55%  { transform: scale(1.18); filter: brightness(2.5) saturate(0.4); }
+  100% { transform: scale(1);    filter: brightness(1)   saturate(1); }
+}
+.pokemon-wrapper.appearing { animation: pokemon-appear 0.38s ease-out forwards; }
+
+@keyframes pokemon-vanish {
+  0%   { transform: scale(1);    filter: brightness(1) saturate(1); }
+  35%  { transform: scale(1.10); filter: brightness(5) saturate(0); }
+  100% { transform: scale(0);    filter: brightness(8) saturate(0); }
+}
+.pokemon-wrapper.vanishing {
+  animation: pokemon-vanish 0.26s ease-in forwards;
+  pointer-events: none;
+}
+
+/* Name label */
+.pokemon-name {
+  margin-bottom: 6px;
+  padding: 4px 10px;
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  color: var(--gb-darkest);
+  background: var(--gb-lightest);
+  white-space: nowrap;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  pointer-events: none;
+  border: 3px solid var(--gb-darkest);
+  box-shadow:
+    inset 0 0 0 2px var(--gb-light),
+    2px 2px 0 var(--gb-darkest);
+}

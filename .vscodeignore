@@ -1,0 +1,9 @@
+.vscode/**
+.vscode-test/**
+src/**
+.gitignore
+webpack.config.js
+tsconfig.json
+scripts/**
+out/**
+node_modules/**
