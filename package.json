@@ -3,7 +3,7 @@
   "displayName": "Retro Pokemon",
   "description": "Original Game Boy Gen 1 Pokemon companions living in your VS Code.",
   "version": "0.1.0",
-  "publisher": "korma",
+  "publisher": "LonelyDevLog",
   "engines": {
     "vscode": "^1.85.0"
   },
